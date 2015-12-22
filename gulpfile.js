@@ -11,6 +11,8 @@ var connect = require('gulp-connect');
 var livereload = require('gulp-livereload');
 var rsync = require('gulp-rsync');
 
+var gsww = require('gulp-sww');
+
 // load up config file
 var config  = require('./gulp.config.json');
 
@@ -66,17 +68,22 @@ gulp.task('watch', ['connect'], function () {
 gulp.task('build', ['js']);
 
 gulp.task('copy', function () {
-  gulp.src([
-    'index.html', 'css/*.css', 'images/**/*', 'fonts/**/*', 'audio/**/*'
-  ], {cwd: 'app', base: 'app'})
+  gulp.src(['js/**/*'], {cwd: '.tmp', base: '.tmp'})
     .pipe(gulp.dest('./dist/'));
 
-
-  gulp.src(['js/**/*'], {cwd: '.tmp', base: '.tmp'})
+  return gulp.src([
+    'index.html', 'css/*.css', 'images/**/*', 'fonts/**/*', 'audio/**/*'
+  ], {cwd: 'app', base: 'app'})
     .pipe(gulp.dest('./dist/'));
 });
 
 gulp.task('dist', ['build', 'copy']);
+
+gulp.task('offline', ['dist'], function() {
+  gulp.src(['**/*'], {cwd: './dist'})
+    .pipe(gsww())
+    .pipe(gulp.dest('./dist/'));
+});
 
 gulp.task('deploy', ['dist'], function () {
   gulp.src('dist')
